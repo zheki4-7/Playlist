@@ -137,9 +137,14 @@ public class AuthController {
     public ResponseEntity<?> refreshToken (HttpServletRequest request) {
         String token = null;
 
-        for (Cookie cookie : request.getCookies()) {
-            if (cookie.getName().equals("refreshToken")) {
-                token = cookie.getValue();
+        Cookie[] cookies = request.getCookies();
+        
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refreshToken")) {
+                    token = cookie.getValue();
+                    System.out.println("Docker test");
+                }
             }
         }
 

@@ -74,12 +74,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User save(UserRequest requestUser) {
-        String encryptedPhone = aesEncryptionService.encrypt(requestUser.getPhone());
+        if (requestUser.getPhone() != null) {
 
-        if (userRepository.existsByEmail(requestUser.getEmail())) {
-            throw new UserExistException("Email already exists, use other email");
-        } else if (requestUser.getPhone() != null && userRepository.existsByPhone(encryptedPhone)) {
-            throw new PhoneExistException("Phone already exists, use phone number");
+            String encryptedPhone = aesEncryptionService.encrypt(requestUser.getPhone());
+
+            if (userRepository.existsByEmail(requestUser.getEmail())) {
+                throw new UserExistException("Email already exists, use other email");
+            } else if (requestUser.getPhone() != null && userRepository.existsByPhone(encryptedPhone)) {
+                throw new PhoneExistException("Phone already exists, use phone number");
+            }
         }
 
         User user = new User();
