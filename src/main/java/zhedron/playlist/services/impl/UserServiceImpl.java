@@ -179,10 +179,10 @@ public class UserServiceImpl implements UserService {
 
         String email = auth.getName();
 
-        User user = userRepository.findByEmail(email).orElseThrow(UserUnauthorizedException::new);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (user.isBlocked()) {
-            throw new UserBlockedException("User " + user.getEmail() + " is blocked");
+            throw new UserBlockedException("You are blocked");
         }
 
         return user;
@@ -240,14 +240,10 @@ public class UserServiceImpl implements UserService {
         }
         if (userUpdate.getAbout() != null) {
             user.setAbout(userUpdate.getAbout());
-
-            text = "Your about changed to " + userUpdate.getAbout();
         }
 
         if (userUpdate.getName() != null) {
             user.setName(userUpdate.getName());
-
-            text = "Your name changed to " + userUpdate.getName();
         }
         if (userUpdate.getPhone() != null) {
             user.setPhone(aesEncryptionService.encrypt(userUpdate.getPhone()));
@@ -283,7 +279,7 @@ public class UserServiceImpl implements UserService {
 
         user.setRole(role);
 
-        log.info("User {} changed role of user to {}", currentUser.getName(), role.name());
+        log.info("User {} changed role of {} to {}", currentUser.getName(), user.getName(), role.name());
 
         userRepository.save(user);
     }

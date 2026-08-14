@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -77,7 +76,7 @@ public class AuthController {
                     )
             }))
     })
-    public ResponseEntity<?> login (@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult, HttpServletResponse response) {
+    public ResponseEntity<?> login (@Valid @RequestBody LoginRequest loginRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -143,7 +142,6 @@ public class AuthController {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals("refreshToken")) {
                     token = cookie.getValue();
-                    System.out.println("Docker test");
                 }
             }
         }
