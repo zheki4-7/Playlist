@@ -87,18 +87,15 @@ class SongControllerTest {
         song.setListeners(2L);
         song.setCreator(creator);
 
-        SongDTO songDTO = new SongDTO(1L, "artist", "album", 3L, LocalDateTime.now(), "audio/mpeg", "track.mp3", 120, Type.SINGLE, null, null, 42L);
+        SongDTO songDTO = new SongDTO(1L, "artist", "album", 3L, LocalDateTime.now(), "audio/mpeg", "track.mp3", 120, Type.SINGLE, null, null, 42L, null, null);
 
-        when(songService.getSongById(1L)).thenReturn(songDTO);
-        when(songMapper.songDTOtoSong(songDTO)).thenReturn(song);
+        when(songService.getSongById(1L)).thenReturn(song);
         when(songMapper.songToSongDTO(song)).thenReturn(songDTO);
 
         mockMvc.perform(get("/song/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.artistName").value("artist"));
-
-        verify(songRepository).save(song);
     }
 
     @Test
@@ -121,7 +118,7 @@ class SongControllerTest {
         MockMultipartFile audioPart = new MockMultipartFile("files", "track.mp3", "audio/mpeg", "audio".getBytes());
         MockMultipartFile imagePart = new MockMultipartFile("image", "cover.jpg", MediaType.IMAGE_JPEG_VALUE, "image".getBytes());
 
-        SongDTO response = new SongDTO(1L, "artist", "album", 0L, LocalDateTime.now(), "audio/mpeg", "track.mp3", 120, Type.SINGLE, "cover.jpg", "image/jpeg", 7L);
+        SongDTO response = new SongDTO(1L, "artist", "album", 0L, LocalDateTime.now(), "audio/mpeg", "track.mp3", 120, Type.SINGLE, "cover.jpg", "image/jpeg", 7L, null, null);
 
         when(songService.save(any(SongRequest.class), anyList(), any()))
                 .thenReturn(List.of(response));
@@ -177,7 +174,7 @@ class SongControllerTest {
     @Test
     void topSongsShouldReturnResponseFromService() throws Exception {
         when(songService.getTopSongs()).thenReturn(List.of(
-                new SongDTO(3L, "artist", "album", 99L, LocalDateTime.now(), null, null, 0, Type.SINGLE, null, null, 1L)
+                new SongDTO(3L, "artist", "album", 99L, LocalDateTime.now(), null, null, 0, Type.SINGLE, null, null, 1L, null, null)
         ));
 
         mockMvc.perform(get("/song/top"))
@@ -189,7 +186,7 @@ class SongControllerTest {
     @Test
     void findAllPerWeekShouldReturnPaginatedResponse() throws Exception {
         PaginatedResponse response = new PaginatedResponse(
-                List.of(new SongDTO(1L, "artist", "album", 10L, LocalDateTime.now(), null, null, 180, Type.SINGLE, null, null, 1L)),
+                List.of(new SongDTO(1L, "artist", "album", 10L, LocalDateTime.now(), null, null, 180, Type.SINGLE, null, null, 1L, null, null)),
                 0,
                 10,
                 1L,

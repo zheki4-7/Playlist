@@ -7,7 +7,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.PlaylistDTO;
-import zhedron.playlist.dto.SongDTO;
 import zhedron.playlist.dto.request.PlaylistRequest;
 import zhedron.playlist.entity.Playlist;
 import zhedron.playlist.entity.Song;
@@ -55,9 +54,7 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public void addSong(long idSong, long playlistId) {
-        SongDTO songDTO = songService.getSongById(idSong);
-
-        Song song = songMapper.songDTOtoSong(songDTO);
+        Song song = songService.getSongById(idSong);
 
         User user = userService.getCurrentUser();
 

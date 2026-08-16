@@ -14,6 +14,7 @@ import zhedron.playlist.entity.Playlist;
 import zhedron.playlist.entity.Song;
 import zhedron.playlist.entity.User;
 import zhedron.playlist.enums.Role;
+import zhedron.playlist.enums.Status;
 import zhedron.playlist.enums.Type;
 import zhedron.playlist.exceptions.SongNotFoundException;
 import zhedron.playlist.exceptions.UserNotEnoughPermissionsException;
@@ -61,14 +62,11 @@ class SongServiceTest {
         Song song = new Song();
         song.setId(1L);
 
-        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0);
-
         when(songRepository.findById(1L)).thenReturn(Optional.of(song));
-        when(songMapper.songToSongDTO(song)).thenReturn(songDTO);
 
-        SongDTO result = songService.getSongById(1L);
+        Song result = songService.getSongById(1L);
 
-        assertEquals(1L, result.id());
+        assertEquals(1L, result.getId());
     }
 
     @Test
@@ -83,6 +81,7 @@ class SongServiceTest {
         Song recentSong = new Song();
         recentSong.setId(1L);
         recentSong.setCreatedAt(LocalDateTime.now().minusDays(2));
+        recentSong.setStatus(Status.PUBLISHED);
 
         Song oldSong = new Song();
         oldSong.setId(2L);
@@ -90,7 +89,7 @@ class SongServiceTest {
 
         when(songRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(recentSong, oldSong)));
         when(songMapper.songToSongDTO(recentSong))
-                .thenReturn(new SongDTO(1L, "artist", "album", 5L, recentSong.getCreatedAt(), null, null, 120, Type.SINGLE, null, null, 1L));
+                .thenReturn(new SongDTO(1L, "artist", "album", 5L, recentSong.getCreatedAt(), null, null, 120, Type.SINGLE, null, null, 1L, Status.PUBLISHED, null));
 
         PaginatedResponse response = songService.findAllPerWeek(0, 10);
 
@@ -158,20 +157,23 @@ class SongServiceTest {
         Song first = new Song();
         first.setId(1L);
         first.setListeners(10L);
+        first.setStatus(Status.PUBLISHED);
 
         Song second = new Song();
         second.setId(2L);
         second.setListeners(50L);
+        second.setStatus(Status.PUBLISHED);
 
         Song third = new Song();
         third.setId(3L);
         third.setListeners(20L);
+        third.setStatus(Status.PUBLISHED);
 
         when(songRepository.findAll()).thenReturn(List.of(first, second, third));
         when(songMapper.songToSongDTOList(anyList())).thenAnswer(invocation -> {
             List<Song> songs = invocation.getArgument(0);
             return songs.stream()
-                    .map(song -> new SongDTO(song.getId(), null, null, song.getListeners(), null, null, null, 0, null, null, null, 0L))
+                    .map(song -> new SongDTO(song.getId(), null, null, song.getListeners(), null, null, null, 0, null, null, null, 0L, Status.PUBLISHED, null))
                     .toList();
         });
 
@@ -188,8 +190,9 @@ class SongServiceTest {
         song.setId(1L);
         song.setArtistName("artist");
         song.setAlbumName("album");
+        song.setStatus(Status.PUBLISHED);
 
-        SongDTO songDTO = new SongDTO(1L, "artist", "album", 0L, null, null, null, 0, null, null, null, 0L);
+        SongDTO songDTO = new SongDTO(1L, "artist", "album", 0L, null, null, null, 0, null, null, null, 0L, Status.PUBLISHED, null);
 
         when(songRepository.findByArtistNameOrAlbumName("artist", "album")).thenReturn(List.of(song));
         when(songMapper.songToSongDTOList(List.of(song))).thenReturn(List.of(songDTO));
@@ -249,8 +252,8 @@ class SongServiceTest {
 
         List<Song> songs = List.of(song, song2);
 
-        SongDTO songDTO1 = new SongDTO(1L, null, null, 0L, null, null, null, 0, null, null, null, 0L);
-        SongDTO songDTO2 = new SongDTO(2L, null, null, 0L, null, null, null, 0, null, null, null, 0L);
+        SongDTO songDTO1 = new SongDTO(1L, null, null, 0L, null, null, null, 0, null, null, null, 0L, null, null);
+        SongDTO songDTO2 = new SongDTO(2L, null, null, 0L, null, null, null, 0, null, null, null, 0L, null, null);
 
         when(userService.getCurrentUser()).thenReturn(currentUser);
         when(songRepository.findAllByCreator(currentUser)).thenReturn(songs);

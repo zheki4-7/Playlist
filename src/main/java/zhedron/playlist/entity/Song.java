@@ -2,6 +2,7 @@ package zhedron.playlist.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import zhedron.playlist.enums.Status;
 import zhedron.playlist.enums.Type;
 
 import java.time.LocalDateTime;
@@ -41,4 +42,9 @@ public class Song {
 
     @Enumerated(EnumType.STRING)
     private Type type;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    private LocalDateTime publishedAt;
 }

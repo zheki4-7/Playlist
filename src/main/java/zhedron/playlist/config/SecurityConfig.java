@@ -34,7 +34,7 @@ public class SecurityConfig {
 
     private final String[] ALL = {"/login", "/refreshtoken",
             "/user/registration", "/user/{userId}", "/user/playlists/{userId}", "/user/update/{userId}", "/user/picture/{userId}",
-            "/song/top", "/song/file/{songId}", "/song/perweek", "/song/{songId}", "/song/search", "/song/image/{songId}",
+            "/song/top", "/song/file/{songId}", "/song/perweek", "/song/{songId}", "/song/search", "/song/image/{songId}", "/song/status/{id}",
             "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
             "/refreshtoken"};
 

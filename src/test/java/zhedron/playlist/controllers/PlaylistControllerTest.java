@@ -91,7 +91,7 @@ class PlaylistControllerTest {
     @Test
     @WithMockUser(username = "test", password = "test")
     void findByArtistNameOrAlbumNameShouldReturnPlaylists() throws Exception {
-        SongDTO song = new SongDTO(1L, "artist", "album", 10L, LocalDateTime.now(), null, null, 120, null, null, null, 7L);
+        SongDTO song = new SongDTO(1L, "artist", "album", 10L, LocalDateTime.now(), null, null, 120, null, null, null, 7L, null, null);
         PlaylistDTO playlist = new PlaylistDTO(1L, Set.of(song), 10L, 120L, true, 1, LocalDateTime.now(), "cover.jpg", "image/jpeg", "Favorites");
 
         when(playlistService.getPlaylistsByArtistNameOrAlbumName("artist", "album", 7L))
@@ -224,7 +224,7 @@ class PlaylistControllerTest {
 
         song.setId(10L);
 
-        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0);
+        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0, null, null);
 
         Set<SongDTO> songs = new HashSet<>();
 
@@ -273,7 +273,7 @@ class PlaylistControllerTest {
 
         song.setId(10L);
 
-        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0);
+        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0, null, null);
 
         Set<SongDTO> songs = new HashSet<>();
 

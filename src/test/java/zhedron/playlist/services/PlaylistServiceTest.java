@@ -68,15 +68,12 @@ class PlaylistServiceTest {
         song.setId(5L);
         song.setDuration(180);
 
-        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, song.getDuration(), null, null, null, 0);
-
         Playlist playlist = new Playlist();
         playlist.setId(10L);
         playlist.setUser(user);
         playlist.setDuration(20L);
 
-        when(songService.getSongById(5L)).thenReturn(songDTO);
-        when(songMapper.songDTOtoSong(songDTO)).thenReturn(song);
+        when(songService.getSongById(5L)).thenReturn(song);
         when(userService.getCurrentUser()).thenReturn(user);
         when(playlistRepository.findById(10L)).thenReturn(Optional.of(playlist));
 
@@ -98,9 +95,7 @@ class PlaylistServiceTest {
         Song song = new Song();
         song.setId(5L);
 
-        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0);
-
-        when(songService.getSongById(5L)).thenReturn(songDTO);
+        when(songService.getSongById(5L)).thenReturn(song);
         when(userService.getCurrentUser()).thenReturn(user);
         when(playlistRepository.findById(10L)).thenReturn(Optional.empty());
 
@@ -134,9 +129,7 @@ class PlaylistServiceTest {
         targetPlaylist.setId(10L);
         targetPlaylist.setUser(anotherUser);
 
-        SongDTO songDTO = new SongDTO(song.getId(), null, null, 0, null, null, null, 0, null, null, null, 0);
-
-        when(songService.getSongById(5L)).thenReturn(songDTO);
+        when(songService.getSongById(5L)).thenReturn(song);
         when(userService.getCurrentUser()).thenReturn(currentUser);
         when(playlistRepository.findById(10L)).thenReturn(Optional.of(targetPlaylist));
 
@@ -152,7 +145,7 @@ class PlaylistServiceTest {
 
     @Test
     void getPlaylistsByArtistNameOrAlbumNameShouldReturnMappedPlaylists() {
-        SongDTO songDTO = new SongDTO(1L, "artist", "album", 10L, LocalDateTime.now(), null, null, 120, null, null, null, 1L);
+        SongDTO songDTO = new SongDTO(1L, "artist", "album", 10L, LocalDateTime.now(), null, null, 120, null, null, null, 1L, null, null);
         PlaylistDTO playlistDTO = new PlaylistDTO(2L, Set.of(songDTO), 10L, 120L, true, 1, LocalDateTime.now(), "cover.jpg", "image/jpeg", "Favorites");
         Playlist playlist = new Playlist();
 

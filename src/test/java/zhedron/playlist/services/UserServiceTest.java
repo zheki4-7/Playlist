@@ -164,7 +164,7 @@ class UserServiceTest {
 
         PlaylistDTO playlistDTO = new PlaylistDTO(
                 3L,
-                Set.of(new SongDTO(7L, "artist", "album", 0L, song.getCreatedAt(), null, null, 0, Type.SINGLE, null, null, 1L)),
+                Set.of(new SongDTO(7L, "artist", "album", 0L, song.getCreatedAt(), null, null, 0, Type.SINGLE, null, null, 1L, null, null)),
                 0L,
                 0L,
                 true,

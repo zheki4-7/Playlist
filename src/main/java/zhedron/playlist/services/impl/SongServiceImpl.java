@@ -14,12 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.SongDTO;
 import zhedron.playlist.dto.request.SongRequest;
+import zhedron.playlist.dto.request.SongUpdateRequest;
 import zhedron.playlist.dto.response.PaginatedResponse;
 import zhedron.playlist.entity.Playlist;
 import zhedron.playlist.entity.Song;
 import zhedron.playlist.entity.User;
 import zhedron.playlist.enums.Role;
+import zhedron.playlist.enums.Status;
 import zhedron.playlist.enums.Type;
+import zhedron.playlist.exceptions.AccessDeniedException;
 import zhedron.playlist.exceptions.SongNotFoundException;
 import zhedron.playlist.exceptions.UserNotEnoughPermissionsException;
 import zhedron.playlist.mapper.SongMapper;
@@ -67,12 +70,17 @@ public class SongServiceImpl implements SongService {
 
         if (Files.notExists(path)) {
             Files.createDirectories(path);
-        } else if (Files.notExists(imagePath)) {
+        }
+
+        if (Files.notExists(imagePath)) {
             Files.createDirectories(imagePath);
         }
 
+        User currentUser = userService.getCurrentUser();
+
+        System.out.println(currentUser.getId());
+
         for (MultipartFile multipartFile : files) {
-            User currentUser = userService.getCurrentUser();
 
             Type type = files.size() > 1 ? Type.ALBUM : Type.SINGLE;
 
@@ -99,6 +107,7 @@ public class SongServiceImpl implements SongService {
             song.setAlbumName(requestSong.getAlbumName());
             song.setArtistName(requestSong.getArtistName());
             song.setType(type);
+            song.setStatus(Status.ARCHIVED);
 
             songList.add(song);
 
@@ -116,15 +125,15 @@ public class SongServiceImpl implements SongService {
 
         List<Song> savedSong = songRepository.saveAll(songList);
 
+        System.out.println(savedSong.get(0).getCreator().getId());
+
         return songMapper.songToSongDTOList(savedSong);
     }
 
     @Override
     @Cacheable(value = "songs", key = "#id")
-    public SongDTO getSongById(long id) {
-        Song song = songRepository.findById(id).orElseThrow(() -> new SongNotFoundException("Song not found with " + id));
-
-        return songMapper.songToSongDTO(song);
+    public Song getSongById(long id) {
+        return songRepository.findById(id).orElseThrow(() -> new SongNotFoundException("Song not found with " + id));
     }
 
     @Override
@@ -165,7 +174,11 @@ public class SongServiceImpl implements SongService {
     public List<SongDTO> getTopSongs() {
         List<Song> songs = songRepository.findAll();
 
-        List<Song> topSongs = songs.stream().sorted(Comparator.comparingLong(Song::getListeners).reversed()).limit(10).collect(Collectors.toList());
+        List<Song> topSongs = songs.stream().filter(song -> song.getStatus().equals(Status.PUBLISHED))
+                .sorted(Comparator.comparingLong(Song::getListeners)
+                        .reversed())
+                .limit(10).
+                collect(Collectors.toList());
 
         return songMapper.songToSongDTOList(topSongs);
     }
@@ -176,7 +189,7 @@ public class SongServiceImpl implements SongService {
 
         Page<Song> songPage = songRepository.findAll(pageable);
 
-        List<Song> findAllPerWeek = songPage.getContent().stream().filter(s -> s.getCreatedAt().isAfter(LocalDateTime.now().minusWeeks(1))).collect(Collectors.toList());
+        List<Song> findAllPerWeek = songPage.getContent().stream().filter(s -> s.getCreatedAt().isAfter(LocalDateTime.now().minusWeeks(1)) && s.getStatus().equals(Status.PUBLISHED)).collect(Collectors.toList());
 
         List<SongDTO> songResponses = findAllPerWeek.stream().map(songMapper::songToSongDTO).collect(Collectors.toList());
 
@@ -197,7 +210,9 @@ public class SongServiceImpl implements SongService {
     public List<SongDTO> findByArtistNameOrAlbumName(String artistName, String albumName) {
         List<Song> songs = songRepository.findByArtistNameOrAlbumName(artistName, albumName);
 
-        if (songs.isEmpty()) {
+        List<Song> songsPublished = songs.stream().filter(song -> song.getStatus().equals(Status.PUBLISHED)).collect(Collectors.toList());
+
+        if (songsPublished.isEmpty()) {
             if (artistName != null && albumName == null) {
                 throw new SongNotFoundException("Song not found with " + artistName);
             } else if (artistName == null && albumName != null) {
@@ -207,7 +222,7 @@ public class SongServiceImpl implements SongService {
             }
         }
 
-        return songMapper.songToSongDTOList(songs);
+        return songMapper.songToSongDTOList(songsPublished);
     }
 
     @Override
@@ -217,5 +232,24 @@ public class SongServiceImpl implements SongService {
         List<Song> songs = songRepository.findAllByCreator(currentUser);
 
         return songMapper.songToSongDTOList(songs);
+    }
+
+    @Override
+    @CacheEvict(value = "songs", key = "#id")
+    public SongDTO changeStatus(long id, SongUpdateRequest songUpdateRequest) {
+        Song song = songRepository.findById(id).orElseThrow(() -> new SongNotFoundException("Song not found with " + id));
+
+        User currentUser = userService.getCurrentUser();
+
+        if (!song.getCreator().equals(currentUser)) {
+            throw new AccessDeniedException("You don't have permissions to change status this song");
+        }
+
+        song.setStatus(songUpdateRequest.getStatus());
+        song.setPublishedAt(songUpdateRequest.getPublishedAt());
+
+        Song updatedSong = songRepository.save(song);
+
+        return songMapper.songToSongDTO(updatedSong);
     }
 }

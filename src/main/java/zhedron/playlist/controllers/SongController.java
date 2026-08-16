@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.SongDTO;
 import zhedron.playlist.dto.request.SongRequest;
+import zhedron.playlist.dto.request.SongUpdateRequest;
 import zhedron.playlist.dto.response.MessageResponse;
 import zhedron.playlist.dto.response.PaginatedResponse;
 import zhedron.playlist.entity.Song;
@@ -143,13 +144,7 @@ public class SongController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message\": \"Song not found with {id}\"}")))
     })
     public SongDTO findSongById(@PathVariable long id) {
-        SongDTO songDTO = songService.getSongById(id);
-
-        Song song = songMapper.songDTOtoSong(songDTO);
-
-        song.setListeners(song.getListeners() + 1);
-
-        songRepository.save(song);
+        Song song = songService.getSongById(id);
 
         return songMapper.songToSongDTO(song);
     }
@@ -165,12 +160,10 @@ public class SongController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message\": \"Cannot read file.\"}")))
     })
     public ResponseEntity<?> getSongById (@PathVariable long id) {
-        SongDTO songDTO = songService.getSongById(id);
-
-        Song song = songMapper.songDTOtoSong(songDTO);
+        Song song = songService.getSongById(id);
 
         try {
-            Path path = Paths.get(PATH).resolve(songDTO.fileName()).normalize();
+            Path path = Paths.get(PATH).resolve(song.getFileName()).normalize();
 
             Resource resource = new UrlResource(path.toUri());
 
@@ -248,19 +241,24 @@ public class SongController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message\": \"Song not found with {id}\"}")))
     })
     public ResponseEntity<?> getImageBySongId(@PathVariable long id) {
-        SongDTO song = songService.getSongById(id);
+        Song song = songService.getSongById(id);
 
         if (song != null) {
-            Path path = Paths.get(IMAGEPATH).resolve(song.imagePath()).normalize();
+            Path path = Paths.get(IMAGEPATH).resolve(song.getImagePath()).normalize();
 
             try {
                 Resource resource = new UrlResource(path.toUri());
 
-                return ResponseEntity.ok().contentType(MediaType.parseMediaType(song.contentType())).body(resource);
+                return ResponseEntity.ok().contentType(MediaType.parseMediaType(song.getContentType())).body(resource);
             } catch (IOException e) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error loading image"));
             }
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/status/{id}")
+    public ResponseEntity<SongDTO> changeStatus(@PathVariable long id, @RequestBody SongUpdateRequest songUpdateRequest) {
+        return ResponseEntity.ok(songService.changeStatus(id, songUpdateRequest));
     }
 }

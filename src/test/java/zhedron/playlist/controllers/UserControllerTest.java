@@ -254,7 +254,7 @@ class UserControllerTest {
 
     @Test
     void getPlaylistsShouldReturnPlaylistList() throws Exception {
-        SongDTO song = new SongDTO(3L, "artist", "album", 5L, LocalDateTime.now(), null, null, 180, Type.SINGLE, null, null, 1L);
+        SongDTO song = new SongDTO(3L, "artist", "album", 5L, LocalDateTime.now(), null, null, 180, Type.SINGLE, null, null, 1L, null, null);
         PlaylistDTO playlist = new PlaylistDTO(11L, Set.of(song), 5L, 180L, true, 1, LocalDateTime.now(), "cover.jpg", "image/jpeg", "Favorites");
 
         when(userService.getPlaylists(1L)).thenReturn(List.of(playlist));
