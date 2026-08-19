@@ -165,7 +165,7 @@ public class PlaylistController {
         Resource resource = new UrlResource(playlistDTO.imageURL());
 
         if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.internalServerError().build();
         }
 
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(playlistDTO.contentType())).body(resource);

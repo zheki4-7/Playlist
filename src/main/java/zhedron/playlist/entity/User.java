@@ -48,6 +48,9 @@ public class User {
 
     private String contentType;
 
+    @OneToMany(fetch =  FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE}, orphanRemoval = true, mappedBy = "creator")
+    private List<Album> albums;
+
     private boolean isHiddenPhone;
 
     @OneToMany(mappedBy = "subscriber")

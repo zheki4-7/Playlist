@@ -16,7 +16,6 @@ import zhedron.playlist.exceptions.AccessDeniedException;
 import zhedron.playlist.exceptions.PlaylistNotFoundException;
 import zhedron.playlist.exceptions.UserNotFoundException;
 import zhedron.playlist.mapper.PlaylistMapper;
-import zhedron.playlist.mapper.SongMapper;
 import zhedron.playlist.repository.PlaylistRepository;
 import zhedron.playlist.repository.UserRepository;
 import zhedron.playlist.services.PlaylistService;
@@ -41,15 +40,13 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistMapper playlistMapper;
 
     private final String PATH = "playlist_image";
-    private final SongMapper songMapper;
 
-    public PlaylistServiceImpl(PlaylistRepository playlistRepository, UserRepository userRepository, SongService songService, UserService userService, PlaylistMapper playlistMapper, SongMapper songMapper) {
+    public PlaylistServiceImpl(PlaylistRepository playlistRepository, UserRepository userRepository, SongService songService, UserService userService, PlaylistMapper playlistMapper) {
         this.playlistRepository = playlistRepository;
         this.userRepository = userRepository;
         this.songService = songService;
         this.userService = userService;
         this.playlistMapper = playlistMapper;
-        this.songMapper = songMapper;
     }
 
     @Override

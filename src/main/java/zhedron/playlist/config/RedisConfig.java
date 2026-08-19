@@ -9,10 +9,12 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.serializer.*;
+import zhedron.playlist.dto.AlbumDTO;
 import zhedron.playlist.dto.PlaylistDTO;
 import zhedron.playlist.dto.SongDTO;
 import zhedron.playlist.dto.UserDTO;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ public class RedisConfig {
 
         objectMapper.registerModule(new JavaTimeModule());
 
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig();
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(10));
 
         Map<String, RedisCacheConfiguration> configs = new HashMap<>();
 
@@ -36,6 +38,8 @@ public class RedisConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, SongDTO.class))));
         configs.put("playlists", config
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, PlaylistDTO.class))));
+        configs.put("albums", config
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(objectMapper, AlbumDTO.class))));
 
         return RedisCacheManager.builder(factory)
                 .withInitialCacheConfigurations(configs)

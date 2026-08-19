@@ -173,7 +173,7 @@ public class SongController {
 
             return ResponseEntity.ok().contentType(MediaType.parseMediaType(song.getContentType())).body(resource);
         } catch (IOException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Cannot read file."));
+            return ResponseEntity.internalServerError().build();
         }
     }
 

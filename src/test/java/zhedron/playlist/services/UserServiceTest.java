@@ -81,7 +81,7 @@ class UserServiceTest {
         User user = new User();
         user.setId(1L);
 
-        UserDTO userDTO = new UserDTO(user.getId(), null, null, null, List.of(), false, null, null, null, null, null, null, false, null, List.of());
+        UserDTO userDTO = new UserDTO(user.getId(), null, null, null, false, null, null, null, null, null, null, false, null, List.of(), List.of(), List.of());
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userMapper.userToUserDTO(user)).thenReturn(userDTO);
@@ -146,7 +146,7 @@ class UserServiceTest {
         User user = new User();
         user.setId(1L);
 
-        UserDTO userDTO = new UserDTO(user.getId(), null, null, null, List.of(), false, null, null, null, null, null, null, false, null, List.of());
+        UserDTO userDTO = new UserDTO(user.getId(), null, null, null, false, null, null, null, null, null, null, false, null, List.of(), List.of(), List.of());
 
         Song song = new Song();
         song.setId(7L);
@@ -198,7 +198,7 @@ class UserServiceTest {
         targetUser.setEmail("old@test.com");
         targetUser.setPassword("old-password");
 
-        UserDTO userDTO = new UserDTO(targetUser.getId(), targetUser.getEmail(), null, null, List.of(), false, null, null, null, null, null, null, false, null, List.of());
+        UserDTO userDTO = new UserDTO(targetUser.getId(), targetUser.getEmail(), null, null, false, null, null, null, null, null, null, false, null, List.of(), List.of(), List.of());
 
         UserUpdateRequest updateRequest = new UserUpdateRequest();
         updateRequest.setEmail("new@test.com");
@@ -235,7 +235,7 @@ class UserServiceTest {
         user.setId(1L);
         user.setRole(Role.USER);
 
-        UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(), null, null, List.of(), false, null, null, null, null, null, null, false, null, List.of());
+        UserDTO userDTO = new UserDTO(user.getId(), user.getEmail(), null, null, false, null, null, null, null, null, null, false, null, List.of(), List.of(), List.of());
 
         mockCurrentUser(currentUser);
 

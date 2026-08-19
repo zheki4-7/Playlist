@@ -11,7 +11,6 @@ import zhedron.playlist.entity.User;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = {SongMapper.class, SubscriptionMapper.class})
 public interface UserMapper {
     @Mapping(target = "isHiddenPhone", source = "hiddenPhone")
-    @Mapping(target = "subscriptionsDTO", source = "subscriptions")
     UserDTO userToUserDTO(User user);
 
     @Mapping(target = "isPublic", source = "public")

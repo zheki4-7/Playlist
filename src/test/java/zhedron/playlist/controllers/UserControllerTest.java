@@ -106,7 +106,6 @@ class UserControllerTest {
                 "test@test.com",
                 user.getCreatedAt(),
                 Role.USER,
-                null,
                 false,
                 Provider.LOCAL,
                 "test",
@@ -116,7 +115,9 @@ class UserControllerTest {
                 "encrypted-phone",
                 false,
                 null,
-                null
+                List.of(),
+                List.of(),
+                List.of()
         );
     }
 

@@ -9,14 +9,13 @@ import java.util.List;
 
 
 public record UserDTO(long id, String email, LocalDateTime createdAt,
-                      Role role, List<PlaylistDTO> playlists, boolean blocked, Provider provider,
+                      Role role, boolean blocked, Provider provider,
                       String name, String about, String profilePicture,
                       String contentType, String phone,
-                      boolean isHiddenPhone, LocalDateTime updatedAt, List<SubscriptionDTO> subscriptionsDTO) {
+                      boolean isHiddenPhone, LocalDateTime updatedAt, List<PlaylistDTO> playlists, List<AlbumDTO> albums, List<SubscriptionDTO> subscriptions) {
     public UserDTO getByPhone(String phone) {
-        return new UserDTO(id, email, createdAt, role,
-                playlists, blocked, provider,
+        return new UserDTO(id, email, createdAt, role, blocked, provider,
                 name, about, profilePicture,
-                contentType, phone, isHiddenPhone, updatedAt, subscriptionsDTO);
+                contentType, phone, isHiddenPhone, updatedAt, playlists, albums, subscriptions);
     }
 }
