@@ -11,12 +11,14 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.PlaylistDTO;
 import zhedron.playlist.dto.SubscriptionDTO;
@@ -33,12 +35,12 @@ import zhedron.playlist.services.SubscriptionService;
 import zhedron.playlist.services.UserService;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping(value = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -188,19 +190,39 @@ public class UserController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
             schema = @Schema(type = "object", example = "{\"error\": \"User not found with {id}\"}")))
     })
-    public ResponseEntity<Resource> getUserPicture(@PathVariable long id) throws MalformedURLException {
+    public ResponseEntity<Resource> getUserPicture(@PathVariable long id, WebRequest webRequest) throws IOException {
         UserDTO userDTO = getUserById(id);
 
         if (userDTO.provider().equals(Provider.GOOGLE)) {
             Resource resource = userService.getProfilePicture(id);
 
-            return ResponseEntity.ok().contentType(MediaType.parseMediaType(userDTO.contentType())).body(resource);
+            long lastModified = resource.lastModified();
+
+            if (webRequest.checkNotModified(lastModified)) {
+                return null;
+            }
+
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.noCache().sMaxAge(1, TimeUnit.DAYS))
+                    .lastModified(lastModified)
+                    .contentType(MediaType.parseMediaType(userDTO.contentType()))
+                    .body(resource);
         } else {
             Path path = Paths.get(PICTURE_PATH).resolve(userDTO.profilePicture()).normalize();
 
             Resource resource = new UrlResource(path.toUri());
 
-            return ResponseEntity.ok().contentType(MediaType.parseMediaType(userDTO.contentType())).body(resource);
+            long lastModified = resource.lastModified();
+
+            if (webRequest.checkNotModified(lastModified)) {
+                return null;
+            }
+
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.noCache().sMaxAge(1, TimeUnit.DAYS))
+                    .lastModified(lastModified)
+                    .contentType(MediaType.parseMediaType(userDTO.contentType()))
+                    .body(resource);
         }
     }
 

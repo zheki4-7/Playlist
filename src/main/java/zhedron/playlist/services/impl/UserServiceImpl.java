@@ -35,7 +35,6 @@ import zhedron.playlist.services.UserService;
 
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -204,7 +203,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Cacheable(value = "users", key = "#id")
-    public Resource getProfilePicture(long id) throws MalformedURLException {
+    public Resource getProfilePicture(long id) throws IOException {
         UserDTO user = getById(id);
 
         return new UrlResource(user.profilePicture());

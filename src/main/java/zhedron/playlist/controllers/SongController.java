@@ -10,12 +10,14 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.SongDTO;
 import zhedron.playlist.dto.request.SongRequest;
@@ -33,6 +35,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/song")
@@ -159,7 +162,7 @@ public class SongController {
             @ApiResponse(responseCode = "400", description = "A file not loaded",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message\": \"Cannot read file.\"}")))
     })
-    public ResponseEntity<?> getSongById (@PathVariable long id) {
+    public ResponseEntity<?> getSongById (@PathVariable long id, WebRequest webRequest) {
         Song song = songService.getSongById(id);
 
         try {
@@ -171,7 +174,16 @@ public class SongController {
 
             songRepository.save(song);
 
-            return ResponseEntity.ok().contentType(MediaType.parseMediaType(song.getContentType())).body(resource);
+            long lastModified = resource.lastModified();
+
+            if (webRequest.checkNotModified(lastModified)) {
+                return null;
+            }
+
+            return ResponseEntity.ok()
+                    .cacheControl(CacheControl.noCache().sMaxAge(7, TimeUnit.DAYS))
+                    .contentType(MediaType.parseMediaType(song.getContentType()))
+                    .body(resource);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
@@ -240,7 +252,7 @@ public class SongController {
             @ApiResponse(responseCode = "404", description = "Not found song",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message\": \"Song not found with {id}\"}")))
     })
-    public ResponseEntity<?> getImageBySongId(@PathVariable long id) {
+    public ResponseEntity<?> getImageBySongId(@PathVariable long id, WebRequest webRequest) {
         Song song = songService.getSongById(id);
 
         if (song != null) {
@@ -249,7 +261,17 @@ public class SongController {
             try {
                 Resource resource = new UrlResource(path.toUri());
 
-                return ResponseEntity.ok().contentType(MediaType.parseMediaType(song.getContentType())).body(resource);
+                long lastModified = resource.lastModified();
+
+                if (webRequest.checkNotModified(lastModified)) {
+                    return null;
+                }
+
+                return ResponseEntity.ok()
+                        .cacheControl(CacheControl.noCache())
+                        .lastModified(lastModified)
+                        .contentType(MediaType.parseMediaType(song.getContentTypeImage()))
+                        .body(resource);
             } catch (IOException e) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Error loading image"));
             }

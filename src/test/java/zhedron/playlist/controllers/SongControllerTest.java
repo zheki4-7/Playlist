@@ -39,7 +39,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(SongController.class)
 @Import(SecurityConfig.class)
@@ -105,6 +108,39 @@ class SongControllerTest {
         mockMvc.perform(get("/song/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Song not found with 1"));
+    }
+
+    @Test
+    void getSongFileShouldReturnCacheControlAndAudioContent() throws Exception {
+        Song song = new Song();
+        song.setId(1L);
+        song.setFileName("1_test_test_december.mp3");
+        song.setContentType("audio/mpeg");
+
+        when(songService.getSongById(1L)).thenReturn(song);
+
+        mockMvc.perform(get("/song/file/1"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", containsString("s-maxage=604800")))
+                .andExpect(header().string("Content-Type", "audio/mpeg"));
+
+        verify(songRepository).save(song);
+    }
+
+    @Test
+    void getSongImageShouldReturnCacheControlAndLastModified() throws Exception {
+        Song song = new Song();
+        song.setId(1L);
+        song.setImagePath("1_test_Classroom POV D.png");
+        song.setContentTypeImage("image/png");
+
+        when(songService.getSongById(1L)).thenReturn(song);
+
+        mockMvc.perform(get("/song/image/1"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-cache"))
+                .andExpect(header().exists("Last-Modified"))
+                .andExpect(header().string("Content-Type", "image/png"));
     }
 
     @Test

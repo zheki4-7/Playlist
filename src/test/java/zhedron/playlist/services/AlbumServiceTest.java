@@ -69,7 +69,7 @@ public class AlbumServiceTest {
 
         MockMultipartFile mockMultipartFile = new MockMultipartFile("image", "image.jpg", MediaType.IMAGE_JPEG_VALUE, "test".getBytes());
 
-        AlbumDTO albumDTO = new AlbumDTO(1L, 0L, null, "title", null, null);
+        AlbumDTO albumDTO = new AlbumDTO(1L, 0L, null, "title", null, null, null);
 
         when(userService.getCurrentUser()).thenReturn(currentUser);
         when(albumRepository.save(any(Album.class))).thenReturn(album);
@@ -160,7 +160,7 @@ public class AlbumServiceTest {
 
         SongDTO songDTO = new SongDTO(1L, null, null, 0, null, null, null, 0, Type.SINGLE, null, null, 1L, null, null);
 
-        AlbumDTO albumDTO = new AlbumDTO(1L, 1L, List.of(songDTO), "title", null, null);
+        AlbumDTO albumDTO = new AlbumDTO(1L, 1L, List.of(songDTO), "title", null, null, null);
 
         when(albumRepository.findById(1L)).thenReturn(Optional.of(album));
         when(songRepository.findById(1L)).thenReturn(Optional.of(song));

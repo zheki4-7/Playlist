@@ -11,7 +11,6 @@ import zhedron.playlist.entity.User;
 import zhedron.playlist.enums.Role;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
 
 public interface UserService {
@@ -29,7 +28,7 @@ public interface UserService {
 
     void blockUser(long userId);
 
-    Resource getProfilePicture(long id) throws MalformedURLException;
+    Resource getProfilePicture(long id) throws IOException;
 
     void updateUser(UserUpdateRequest updateUser, long userId) throws Exception;
 

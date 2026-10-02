@@ -2,6 +2,7 @@ package zhedron.playlist.services.impl;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.AlbumDTO;
@@ -93,7 +94,10 @@ public class AlbumServiceImpl implements AlbumService {
     }
 
     @Override
-    @CacheEvict(value = "albums", key = "#albumId")
+    @Caching(evict = {
+            @CacheEvict(value = "albums", key = "#albumId"),
+            @CacheEvict(value = "users", key = "#result.creator().id()")
+    })
     public AlbumDTO addSongToAlbum(long albumId, long songId) {
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new AlbumNotFoundException("Album not found with " + albumId));
 

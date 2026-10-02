@@ -11,10 +11,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.PlaylistDTO;
 import zhedron.playlist.dto.request.PlaylistRequest;
@@ -22,8 +24,8 @@ import zhedron.playlist.dto.response.MessageResponse;
 import zhedron.playlist.services.PlaylistService;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/playlist")
@@ -159,7 +161,7 @@ public class PlaylistController {
             @ApiResponse(responseCode = "403", description = "Forbidden playlist",
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message\": \"You're can't find this playlist\"}")))
     })
-    public ResponseEntity<Resource> getImage(@PathVariable long id) throws MalformedURLException {
+    public ResponseEntity<Resource> getImage(@PathVariable long id, WebRequest webRequest) throws IOException {
         PlaylistDTO playlistDTO = playlistService.findPlaylistById(id);
 
         Resource resource = new UrlResource(playlistDTO.imageURL());
@@ -168,7 +170,17 @@ public class PlaylistController {
             return ResponseEntity.internalServerError().build();
         }
 
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(playlistDTO.contentType())).body(resource);
+        long lastModified = resource.lastModified();
+
+        if (webRequest.checkNotModified(lastModified)) {
+            return null;
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noCache().sMaxAge(1, TimeUnit.DAYS))
+                .lastModified(lastModified)
+                .contentType(MediaType.parseMediaType(playlistDTO.contentType()))
+                .body(resource);
     }
 
     @GetMapping("/{playlistId}/{userId}")

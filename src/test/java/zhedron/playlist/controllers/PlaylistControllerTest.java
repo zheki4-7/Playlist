@@ -27,6 +27,7 @@ import zhedron.playlist.services.impl.UserDetailsImpl;
 import zhedron.playlist.success.handlers.GoogleSuccessHandler;
 
 import java.time.LocalDateTime;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +39,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.containsString;
 
 @WebMvcTest(PlaylistController.class)
 @Import(SecurityConfig.class)
@@ -211,6 +214,25 @@ class PlaylistControllerTest {
         mockMvc.perform(delete("/playlist/delete/10"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Playlist not found with 10"));
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test")
+    void getPlaylistImageShouldReturnCacheControlAndLastModified() throws Exception {
+        String imageUrl = Paths.get("playlist_image", "test IMG_20260626_134219434_MFNR.jpg")
+                .toAbsolutePath()
+                .toUri()
+                .toString();
+        PlaylistDTO playlistDTO = new PlaylistDTO(
+                10L, Set.of(), 0L, 0L, true, 0, LocalDateTime.now(), imageUrl, "image/jpeg", "Favorites");
+
+        when(playlistService.findPlaylistById(10L)).thenReturn(playlistDTO);
+
+        mockMvc.perform(get("/playlist/image/10"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", containsString("s-maxage=86400")))
+                .andExpect(header().exists("Last-Modified"))
+                .andExpect(header().string("Content-Type", "image/jpeg"));
     }
 
     @Test

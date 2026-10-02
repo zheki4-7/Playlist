@@ -38,7 +38,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.containsString;
 
 
 @WebMvcTest(AlbumController.class)
@@ -91,7 +93,7 @@ public class AlbumControllerTest {
 
         albumRequest.setTitle("test");
 
-        AlbumDTO albumDTO = new AlbumDTO(1L, 0, null, "test", null, null);
+        AlbumDTO albumDTO = new AlbumDTO(1L, 0, null, "test", null, null, null);
 
         MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpg", "image/jpeg", "test".getBytes());
         MockMultipartFile albumRequestFile = new MockMultipartFile("albumRequest", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(albumRequest));
@@ -112,7 +114,7 @@ public class AlbumControllerTest {
         AlbumRequest albumRequest = new AlbumRequest();
         albumRequest.setTitle("");
 
-        AlbumDTO albumDTO = new AlbumDTO(1L, 0, null, "", null, null);
+        AlbumDTO albumDTO = new AlbumDTO(1L, 0, null, "", null, null, null);
 
         MockMultipartFile multipartFile = new MockMultipartFile("image", "image.jpg", "image/jpeg", "test".getBytes());
         MockMultipartFile albumRequestFile = new MockMultipartFile("albumRequest", "", MediaType.APPLICATION_JSON_VALUE, objectMapper.writeValueAsBytes(albumRequest));
@@ -132,7 +134,7 @@ public class AlbumControllerTest {
         Album album = new Album();
         album.setId(1L);
 
-        AlbumDTO albumDTO = new AlbumDTO(1L, 0, null, null, null, null);
+        AlbumDTO albumDTO = new AlbumDTO(1L, 0, null, null, null, null, null);
 
         when(albumService.findById(anyLong())).thenReturn(album);
         when(albumMapper.albumToAlbumDTO(album)).thenReturn(albumDTO);
@@ -150,6 +152,23 @@ public class AlbumControllerTest {
         mockMvc.perform(get("/album/1"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Album not found with 1"));
+    }
+
+    @Test
+    @WithMockUser(username = "test", password = "test")
+    void getAlbumImageShouldReturnCacheControlAndLastModified() throws Exception {
+        Album album = new Album();
+        album.setId(1L);
+        album.setCoverArtUrl("0e4b3fb9-fd4c-41ae-a56a-d561cf62d20f_image.jpg");
+        album.setContentType("image/jpeg");
+
+        when(albumService.findById(1L)).thenReturn(album);
+
+        mockMvc.perform(get("/album/image/1"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", containsString("s-maxage=604800")))
+                .andExpect(header().exists("Last-Modified"))
+                .andExpect(header().string("Content-Type", "image/jpeg"));
     }
 
     @Test
@@ -183,7 +202,7 @@ public class AlbumControllerTest {
 
         SongDTO songDTO = new SongDTO(1L, null, null, 0, null, null, null, 0, null, null, null, 0L, null, null);
 
-        AlbumDTO albumDTO = new AlbumDTO(1L, 0, List.of(songDTO), null, null, null);
+        AlbumDTO albumDTO = new AlbumDTO(1L, 0, List.of(songDTO), null, null, null, null);
 
         when(albumService.addSongToAlbum(anyLong(), anyLong())).thenReturn(albumDTO);
 

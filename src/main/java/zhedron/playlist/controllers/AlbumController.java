@@ -10,12 +10,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 import zhedron.playlist.dto.AlbumDTO;
 import zhedron.playlist.dto.request.AlbumRequest;
@@ -29,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/album")
@@ -88,7 +91,7 @@ public class AlbumController {
             @ApiResponse(responseCode = "404", description = "Album not found", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object", example = "{\"message:\" \"Album not found with 1}\""))),
             @ApiResponse(responseCode = "500", description = "Error reading image file from storage")
     })
-    public ResponseEntity<Resource> getAlbumImageById(@PathVariable long id) {
+    public ResponseEntity<Resource> getAlbumImageById(@PathVariable long id, WebRequest webRequest) {
         Album album = albumService.findById(id);
 
         try {
@@ -96,7 +99,17 @@ public class AlbumController {
 
             Resource resource = new UrlResource(path.toUri());
 
-            return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.parseMediaType(album.getContentType())).body(resource);
+            long lastModified = resource.lastModified();
+
+            if (webRequest.checkNotModified(lastModified)) {
+                return null;
+            }
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .cacheControl(CacheControl.noCache().sMaxAge(7, TimeUnit.DAYS))
+                    .lastModified(lastModified)
+                    .contentType(MediaType.parseMediaType(album.getContentType()))
+                    .body(resource);
         } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
