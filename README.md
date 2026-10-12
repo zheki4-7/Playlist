@@ -35,7 +35,7 @@ Download Docker on your Operating System
 
 Clone the repo
 ```bash
-git clone https://github.com/zhedron/Playlist.git
+git clone https://github.com/zheki4-7/Playlist.git
 ```
 
 ### Linux
